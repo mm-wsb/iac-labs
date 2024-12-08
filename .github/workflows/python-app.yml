@@ -19,7 +19,7 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     defaults:
       run:
-        #working-directory: ./example-app
+        working-directory: ./example-app
         shell: bash
     steps:
     - uses: actions/checkout@v4
@@ -45,6 +45,16 @@ jobs:
         curl -sSL https://install.python-poetry.org | python3 -
         echo 'C:\Users\runneradmin\AppData\Roaming\Python\Scripts' | Out-File -Append $Env:GITHUB_PATH
         poetry --version
+    - name: Set environment variables for database
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        DB_ENGINE: ${{ secrets.DB_ENGINE }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_PORT: ${{ secrets.DB_PORT }}
+        DB_USERNAME: ${{ secrets.DB_USERNAME }}
+        DB_PASS: ${{ secrets.DB_PASS }}
+      run: echo "Database environment variables set"
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -98,7 +108,18 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: "3.10"
+    - name: Set environment variables for database
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        DB_ENGINE: ${{ secrets.DB_ENGINE }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_PORT: ${{ secrets.DB_PORT }}
+        DB_USERNAME: ${{ secrets.DB_USERNAME }}
+        DB_PASS: ${{ secrets.DB_PASS }}
+      run: echo "Database environment variables set"
     - name: Install pytest
       run: pip install pytest
     - name: Test with pytest
       run: pytest
+
