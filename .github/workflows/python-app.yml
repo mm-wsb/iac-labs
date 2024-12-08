@@ -12,15 +12,15 @@ permissions:
   contents: read
 
 concurrency:
-  group: python-build-${{ github.ref }}  # Grupowanie dla unikalnego identyfikatora workflow w zależności od ref
-  cancel-in-progress: true  # Anulowanie poprzednich workflow, jeśli nowy workflow jest uruchamiany
+  group: python-build-${{ github.ref }}  # Grupa dla całego workflow
+  cancel-in-progress: true  # Anulowanie poprzednich workflow w przypadku ponownego uruchomienia
 
 jobs:
   build_dependencies:
     runs-on: ubuntu-latest
     concurrency:
-      group: python-build-${{ github.ref }}
-      cancel-in-progress: true  # Anulowanie poprzednich zadań w przypadku ponownego uruchomienia
+      group: python-build-dependencies-${{ github.ref }}  # Unikalna grupa dla tego joba
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python 3.10
@@ -31,8 +31,8 @@ jobs:
         id: cached-poetry-dependencies
         uses: actions/cache@v3
         with:
-          path: ./example-app/.venv  # Zmieniona ścieżka do katalogu wirtualnego
-          key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}  # Klucz pamięci podręcznej z wykorzystaniem pliku poetry.lock
+          path: ./example-app/.venv
+          key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}
       - name: Install Poetry
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
@@ -46,9 +46,9 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    needs: build_dependencies  # Zależy od joba build_dependencies
+    needs: build_dependencies
     concurrency:
-      group: python-build-${{ github.ref }}
+      group: python-build-lint-${{ github.ref }}  # Unikalna grupa dla lint
       cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
@@ -60,8 +60,8 @@ jobs:
         id: cached-poetry-dependencies
         uses: actions/cache@v3
         with:
-          path: ./example-app/.venv  # Zmieniona ścieżka do katalogu wirtualnego
-          key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}  # Klucz pamięci podręcznej z wykorzystaniem pliku poetry.lock
+          path: ./example-app/.venv
+          key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}
       - name: Lint with flake8
         run: |
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
@@ -69,9 +69,9 @@ jobs:
 
   format:
     runs-on: ubuntu-latest
-    needs: build_dependencies  # Zależy od joba build_dependencies
+    needs: build_dependencies
     concurrency:
-      group: python-build-${{ github.ref }}
+      group: python-build-format-${{ github.ref }}  # Unikalna grupa dla format
       cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
@@ -83,8 +83,8 @@ jobs:
         id: cached-poetry-dependencies
         uses: actions/cache@v3
         with:
-          path: ./example-app/.venv  # Zmieniona ścieżka do katalogu wirtualnego
-          key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}  # Klucz pamięci podręcznej z wykorzystaniem pliku poetry.lock
+          path: ./example-app/.venv
+          key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}
       - name: Format code with black
         run: |
           pip install black
@@ -92,9 +92,9 @@ jobs:
 
   security:
     runs-on: ubuntu-latest
-    needs: build_dependencies  # Zależy od joba build_dependencies
+    needs: build_dependencies
     concurrency:
-      group: python-build-${{ github.ref }}
+      group: python-build-security-${{ github.ref }}  # Unikalna grupa dla security
       cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
@@ -106,8 +106,8 @@ jobs:
         id: cached-poetry-dependencies
         uses: actions/cache@v3
         with:
-          path: ./example-app/.venv  # Zmieniona ścieżka do katalogu wirtualnego
-          key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}  # Klucz pamięci podręcznej z wykorzystaniem pliku poetry.lock
+          path: ./example-app/.venv
+          key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}
       - name: Run security check with bandit
         run: |
           pip install bandit
@@ -115,9 +115,9 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    needs: build_dependencies  # Zależy od joba build_dependencies
+    needs: build_dependencies
     concurrency:
-      group: python-build-${{ github.ref }}
+      group: python-build-test-${{ github.ref }}  # Unikalna grupa dla test
       cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
@@ -129,8 +129,8 @@ jobs:
         id: cached-poetry-dependencies
         uses: actions/cache@v3
         with:
-          path: ./example-app/.venv  # Zmieniona ścieżka do katalogu wirtualnego
-          key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}  # Klucz pamięci podręcznej z wykorzystaniem pliku poetry.lock
+          path: ./example-app/.venv
+          key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -138,4 +138,3 @@ jobs:
       - name: Test with pytest
         run: |
           pytest
-
