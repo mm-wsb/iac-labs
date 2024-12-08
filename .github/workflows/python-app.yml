@@ -19,7 +19,7 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     defaults:
       run:
-        working-directory: ./example-app
+        #working-directory: ./example-app
         shell: bash
     steps:
     - uses: actions/checkout@v4
